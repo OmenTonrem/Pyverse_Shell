@@ -6,12 +6,10 @@ HOST = "127.0.0.1"
 PORT = 12345
 
 def handle_client(client_socket, address):
-    """İstemci bağlantısını yönet"""
     print(f"[+] {address} bağlandı.")
     
     try:
         while True:
-            # Kullanıcıdan komut al
             command = input(f"Komut ({address}): ").strip()
             
             if not command:
@@ -21,14 +19,11 @@ def handle_client(client_socket, address):
                 print(f"[-] {address} bağlantısı kapatılıyor...")
                 break
             
-            # Komutu istemciye gönder
             client_socket.send(command.encode())
             
-            # Yanıtı al (büyük çıktılar için)
             response = b""
             while True:
                 try:
-                    # Socket'i bloke etmeden okuma yap
                     client_socket.settimeout(2.0)
                     chunk = client_socket.recv(4096)
                     if chunk:
@@ -36,7 +31,6 @@ def handle_client(client_socket, address):
                     else:
                         break
                 except socket.timeout:
-                    # Zaman aşımı - daha fazla veri yok
                     break
             
             if response:
@@ -51,7 +45,6 @@ def handle_client(client_socket, address):
         print(f"[-] {address} bağlantısı kapandı.")
 
 def start_server():
-    """Sunucuyu başlat"""
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     
@@ -65,7 +58,6 @@ def start_server():
         while True:
             client_socket, address = server.accept()
             
-            # Yeni istemci için thread oluştur
             client_thread = threading.Thread(
                 target=handle_client,
                 args=(client_socket, address[0])
@@ -81,7 +73,6 @@ def start_server():
         server.close()
 
 def start_single_client_server():
-    """Tek istemcili basit sunucu (threadsiz)"""
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     
@@ -96,7 +87,6 @@ def start_single_client_server():
         print(f"[+] {address} bağlandı.")
         
         while True:
-            # Kullanıcıdan komut al
             command = input("Komut: ").strip()
             
             if not command:
@@ -106,13 +96,11 @@ def start_single_client_server():
                 print("Sunucu kapatılıyor...")
                 break
             
-            # Komutu istemciye gönder
             client_socket.send(command.encode())
             
-            # Yanıtı al
             try:
                 client_socket.settimeout(5.0)
-                response = client_socket.recv(65536)  # 64KB'ye kadar
+                response = client_socket.recv(65536) 
                 
                 if response:
                     print(f"\nÇıktı:\n{response.decode('utf-8', errors='ignore')}")
